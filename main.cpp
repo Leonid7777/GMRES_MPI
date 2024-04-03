@@ -89,30 +89,7 @@ eye_mat(double* mat, int n, int m) {
 }
 
 void
-mat_mul(double* mat, double* res, int n, int m) {
-    double* prom = new double[n * m];
-
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < m; j++) {
-            prom[i + j * n] = 0;
-            for(int p = 0; p < n; p++) {
-                prom[i + j * n] += mat[i + p * n] * res[j * n + p];
-            }
-        }
-    }
-
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < m; j++) {
-            res[i + j * n] = prom[i + j * n];
-        }
-    }
-
-    delete[] prom;
-}
-
-void
 position_mat_mul(double* res, int n, int m, int position, double c, double s) {
-
     double val_1;
 
     for(int j = 0; j < m; j++) {
@@ -122,42 +99,43 @@ position_mat_mul(double* res, int n, int m, int position, double c, double s) {
     }
 }
 
-void
-transpose_mat(double* mat, int n, int m)
+void 
+place_mat_vec(double* mat, double* vec, int m, int size_of_matrix)
 {
-    double* res = new double[m * n];
+    double* res = new double[m];
 
     for(int i = 0; i < m; i++) {
-        for(int j = 0; j < n; j++) {
-            res[j * m + i] = mat[i * n + j];
+        res[i] = 0;
+        for(int j = 0; j < m; j++) {
+            res[i] += mat[i + size_of_matrix * j] * vec[j];
         }
     }
 
-    for(int i = 0; i < m * n; i++) {
-        mat[i] = res[i];
+    for(int i = 0; i < m; i++) {
+        vec[i] = res[i];
     }
+
+    delete[] res;
 }
 
 int 
 main()
 {
-    int krylov_count = 100;
+    int krylov_count = 0;
     int size_of_matrix = 100;
 
     double* right_part = new double[size_of_matrix];
     double* res = new double[size_of_matrix];
     double* matrix = new double[size_of_matrix * size_of_matrix];
 
-    double* krylov_subspaces = new double[(krylov_count + 1) * size_of_matrix];
+    double* krylov_subspaces = new double[(size_of_matrix + 1) * size_of_matrix];
 
-    double* H = new double[(krylov_count + 1) * krylov_count];
-    double* Q = new double[(krylov_count + 1) * (krylov_count + 1)];
-    double* R = new double[(krylov_count + 1) * (krylov_count + 1)];
+    double* H = new double[(size_of_matrix + 1) * size_of_matrix];
+    double* Q = new double[(size_of_matrix + 1) * (size_of_matrix + 1)];
 
     double norm = 0;
 
-    eye_mat(Q, krylov_count + 1, krylov_count + 1);
-    eye_mat(R, krylov_count + 1, krylov_count);
+    eye_mat(Q, size_of_matrix + 1, size_of_matrix + 1);
 
     matrix_make(matrix, size_of_matrix);
     right_part_make(right_part, size_of_matrix, norm);
@@ -167,60 +145,53 @@ main()
         krylov_subspaces[i] = right_part[i] / norm;
     }
 
-    for(int j = 0; j < krylov_count; j++) {
+    double denom, c, s;
+    double err = 10;
 
-        // It's OK
-        mat_vec(matrix, krylov_subspaces + j * size_of_matrix, krylov_subspaces + (j + 1) * size_of_matrix, size_of_matrix, size_of_matrix);
+    while(err >= 0.001 && krylov_count < size_of_matrix) {
 
-        // It's OK
-        for(int i = 0; i <= j; i++) {
+        mat_vec(matrix, krylov_subspaces + krylov_count * size_of_matrix, krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix, size_of_matrix);
 
-            H[j * (krylov_count + 1) + i] = vec_to_vec(krylov_subspaces + (j + 1) * size_of_matrix, krylov_subspaces + i * size_of_matrix, size_of_matrix);
+        for(int i = 0; i <= krylov_count; i++) {
+            H[krylov_count * (size_of_matrix + 1) + i] = vec_to_vec(krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces + i * size_of_matrix, size_of_matrix);
         }
 
-        // It's OK
-        for(int i = 0; i <= j; i++) {
-            vec_sub_vec(krylov_subspaces + (j + 1) * size_of_matrix, krylov_subspaces + i * size_of_matrix, size_of_matrix, H[j * (krylov_count + 1) + i]);
+        for(int i = 0; i <= krylov_count; i++) {
+            vec_sub_vec(krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces + i * size_of_matrix, size_of_matrix, H[krylov_count * (size_of_matrix + 1) + i]);
         }
 
-        // It's OK
-        H[j * (krylov_count + 1) + j + 1] = vec_norm(krylov_subspaces + (j + 1) * size_of_matrix, size_of_matrix);
+        H[krylov_count * (size_of_matrix + 1) + krylov_count + 1] = vec_norm(krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix);
 
-
-        if(H[j * (krylov_count + 1) + j + 1] == 0) {
+        if(H[krylov_count * (size_of_matrix + 1) + krylov_count + 1] == 0) {
             break;
         } else {
-            vec_del(krylov_subspaces + (j + 1) * size_of_matrix, size_of_matrix, H[j * (krylov_count + 1) + j + 1]);
+            vec_del(krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix, H[krylov_count * (size_of_matrix + 1) + krylov_count + 1]);
         }
 
+        place_mat_vec(Q, H + krylov_count * (size_of_matrix + 1), krylov_count + 1, size_of_matrix + 1);
+
+        denom = std::sqrt(H[krylov_count * (size_of_matrix + 1) + krylov_count] * H[krylov_count * (size_of_matrix + 1) + krylov_count] + H[krylov_count * (size_of_matrix + 1) + krylov_count + 1] * H[krylov_count * (size_of_matrix + 1) + krylov_count + 1]);
+
+        c =  H[krylov_count * (size_of_matrix + 1) + krylov_count] / denom;
+        s =  H[krylov_count * (size_of_matrix + 1) + krylov_count + 1] / denom;
+
+        position_mat_mul(H, size_of_matrix + 1, size_of_matrix, krylov_count, c, s);
+        position_mat_mul(Q, size_of_matrix + 1, size_of_matrix + 1, krylov_count, c, s);
+
+        err = std::abs(Q[krylov_count + 1]);
+        krylov_count++;
     }
-    
-    double denom, c, s;
 
-    for(int i = 0; i < krylov_count; i++) {
+    std::cout << krylov_count << std::endl;
 
-        denom = std::sqrt(H[i * (krylov_count + 1) + i] * H[i * (krylov_count + 1) + i] + H[i * (krylov_count + 1) + i + 1] * H[i * (krylov_count + 1) + i + 1]);
-
-        c =  H[i * (krylov_count + 1) + i] / denom;
-        s =  H[i * (krylov_count + 1) + i + 1] / denom;
-
-        position_mat_mul(H, krylov_count + 1, krylov_count, i, c, s);
-        position_mat_mul(Q, krylov_count + 1, krylov_count + 1, i, c, s);
-    }
-
-    double* r_p = new double[krylov_count];
-    double* y = new double[krylov_count];
-
-    for(int i = 0; i < krylov_count; i++) {
-        r_p[i] = Q[i] * norm;
-    }
+    double* y = new double[size_of_matrix];
 
     for(int i = krylov_count - 1; i >= 0; i--) {
-        y[i] = r_p[i];
+        y[i] = Q[i] * norm;
         for(int j = i + 1; j < krylov_count; j++) {
-            y[i] -= H[j * (krylov_count + 1) + i] * y[j];
+            y[i] -= H[j * (size_of_matrix + 1) + i] * y[j];
         }
-        y[i] /=  H[i * (krylov_count + 1) + i];
+        y[i] /=  H[i * (size_of_matrix + 1) + i];
     }
 
     for(int i = 0; i < krylov_count; i++) {
@@ -233,15 +204,21 @@ main()
     mat_vec(matrix, res, h_i_g, size_of_matrix, size_of_matrix);
 
     double normis = 0;
-    double n_r_p = 0;
 
     for(int j = 0; j < size_of_matrix; j++) {
         normis += (h_i_g[j] - right_part[j]) * (h_i_g[j] - right_part[j]);
-        n_r_p += right_part[j] * right_part[j];
     }
 
-    std::cout << std::sqrt(normis / n_r_p) << std::endl;
-    
+    std::cout << std::sqrt(normis) / norm << std::endl;
+
+    delete[] right_part;
+    delete[] res;
+    delete[] matrix;
+    delete[] krylov_subspaces;
+    delete[] H;
+    delete[] Q;
+    delete[] y;
+    delete[] h_i_g;
 
     return 0;
 }
