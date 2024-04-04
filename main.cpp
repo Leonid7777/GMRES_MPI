@@ -200,10 +200,9 @@ main()
         }
     }
 
+    double normis = 0;
     double* h_i_g = new double[size_of_matrix];
     mat_vec(matrix, res, h_i_g, size_of_matrix, size_of_matrix);
-
-    double normis = 0;
 
     for(int j = 0; j < size_of_matrix; j++) {
         normis += (h_i_g[j] - right_part[j]) * (h_i_g[j] - right_part[j]);
