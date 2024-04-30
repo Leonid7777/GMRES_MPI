@@ -36,8 +36,11 @@ place_mat_vec(std::vector<double> mat, double* vec, int m, int size_of_matrix)
 
     for(int i = 0; i < m; i++) {
         res[i] = 0;
-        for(int j = 0; j < m; j++) {
-            res[i] += mat[i + size_of_matrix * j] * vec[j];
+    }
+
+    for(int j = 0; j < m; j++) {
+        for(int i = 0; i < m; i++) {
+            res[i] += mat[size_of_matrix * j + i] * vec[j];
         }
     }
 
@@ -46,4 +49,14 @@ place_mat_vec(std::vector<double> mat, double* vec, int m, int size_of_matrix)
     }
 
     delete[] res;
+}
+
+void
+vec_sub_mat(double* res, double* mat, double* vec, int m, int n)
+{   
+    for(int i = 0; i <= n; i++) {
+        for(int j = 0; j < m; j++) {
+            res[j] -= vec[i] * mat[i * m + j];
+        }
+    }
 }
