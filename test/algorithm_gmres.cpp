@@ -12,7 +12,7 @@ int
 main()
 {
     double norm = 0;
-    int size_of_matrix = 10;
+    int size_of_matrix = 1000;
 
     double* matrix = new double[size_of_matrix * size_of_matrix];
     double* right_part = new double[size_of_matrix];

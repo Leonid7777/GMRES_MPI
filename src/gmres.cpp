@@ -2,7 +2,6 @@
 #include <cmath>
 #include "vec_methods.h"
 #include "mat_methods.h"
-#include <iostream>
 
 
 void
@@ -39,13 +38,9 @@ GMRES(int size_of_matrix, double* matrix, double* right_part, double* res)
 
         mat_vec(matrix, krylov_subspaces + krylov_count * size_of_matrix, krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix, size_of_matrix);
 
-        for(int i = 0; i <= krylov_count; i++) {
-            H_vec[krylov_count * (size_of_matrix + 1) + i] = vec_to_vec(krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces + i * size_of_matrix, size_of_matrix);
-        }
+        scal_prod(&H_vec[krylov_count * (size_of_matrix + 1)], krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces, size_of_matrix, krylov_count);
 
-        for(int i = 0; i <= krylov_count; i++) {
-            vec_sub_vec(krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces + i * size_of_matrix, size_of_matrix, H_vec[krylov_count * (size_of_matrix + 1) + i]);
-        }
+        vec_sub_mat(krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces, &H_vec[krylov_count * (size_of_matrix + 1)], size_of_matrix, krylov_count);
 
         H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1] = vec_norm(krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix);
 
