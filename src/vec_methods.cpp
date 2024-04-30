@@ -47,3 +47,9 @@ vec_del(double* vec, double n, double val)
         vec[i] /= val;
     }
 }
+
+double
+hypotenuse(double a, double b)
+{
+    return std::sqrt(a * a + b * b);
+}
