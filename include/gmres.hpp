@@ -2,11 +2,12 @@
 #include <cmath>
 #include "vec_methods.h"
 #include "mat_methods.h"
-#include "world_class.cpp"
+#include "../class/world_class.h"
 
 
+template <class T>
 void
-GMRES(Matvec& A, double* right_part, double* res)
+GMRES(T& A, double* right_part, double* res)
 {
     int size_of_matrix = A.get_size();
     double norm = vec_norm(right_part, size_of_matrix);

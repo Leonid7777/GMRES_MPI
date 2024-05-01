@@ -5,7 +5,7 @@
 #include <vector>
 #include "create_mat_r.h"
 #include "vec_methods.h"
-#include "gmres.h"
+#include "gmres.hpp"
 
 
 int 
@@ -26,7 +26,7 @@ main()
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    GMRES(A, right_part, res);
+    GMRES<Matvec>(A, right_part, res);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
