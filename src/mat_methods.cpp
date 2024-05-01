@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 
 
 void 
@@ -38,9 +39,9 @@ place_mat_vec(std::vector<double> mat, double* vec, int m, int size_of_matrix)
         res[i] = 0;
     }
 
-    for(int j = 0; j < m; j++) {
-        for(int i = 0; i < m; i++) {
-            res[i] += mat[size_of_matrix * j + i] * vec[j];
+    for(int i = 0; i < m; i++) {
+        for(int j = 0; j < m; j++) {
+            res[j] += mat[size_of_matrix * i + j] * vec[i];
         }
     }
 

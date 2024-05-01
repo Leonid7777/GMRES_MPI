@@ -2,6 +2,8 @@
 #include <cmath>
 #include "vec_methods.h"
 #include "mat_methods.h"
+#include "world_class.cpp"
+
 
 
 void
@@ -36,7 +38,7 @@ GMRES(int size_of_matrix, double* matrix, double* right_part, double* res)
             eye_mat_place(Q_vec, size_of_matrix + 1, kr_v, place);
         }
 
-        mat_vec(matrix, krylov_subspaces + krylov_count * size_of_matrix, krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix, size_of_matrix);
+        Matvec::mat_vec(matrix ,krylov_subspaces + krylov_count * size_of_matrix, krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix, size_of_matrix);
 
         scal_prod(&H_vec[krylov_count * (size_of_matrix + 1)], krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces, size_of_matrix, krylov_count);
 

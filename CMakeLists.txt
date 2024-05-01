@@ -12,6 +12,8 @@ include_directories(${INCLUDE_PATH})
 
 add_library(${CMAKE_PROJECT_NAME})
 
-add_subdirectory(src)
+add_subdirectory(class)
 
 add_subdirectory(test)
+
+add_subdirectory(src)

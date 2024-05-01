@@ -1,16 +1,5 @@
 #include <cmath>
 
-
-void 
-mat_vec(double* mat, double* vec, double* res, int m, int n)
-{
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < m; j++) {
-            res[j] += mat[i * m + j] * vec[i];
-        }
-    }
-}
-
 void
 scal_prod(double* res, double* vec, double* mat, int m, int n)
 {

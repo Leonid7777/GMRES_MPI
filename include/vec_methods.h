@@ -1,4 +1,3 @@
-void mat_vec(double* mat, double* vec, double* res, int m, int n);
 void vec_sub_vec(double* f_vec, double* s_vec, int n, double val);
 double vec_norm(double* vec, int n);
 void vec_del(double* vec, int n, double val);
