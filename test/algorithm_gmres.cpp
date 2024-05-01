@@ -6,7 +6,6 @@
 #include "create_mat_r.h"
 #include "vec_methods.h"
 #include "gmres.h"
-#include "world_class.cpp"
 
 
 int 
@@ -27,7 +26,7 @@ main()
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    GMRES(A.get_size(), A.get_matrix(), right_part, res);
+    GMRES(A, right_part, res);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -35,7 +34,7 @@ main()
     std::cout << "Время работы программы: " << duration.count() << " миллисекунд" << std::endl;
 
     double* h_i_g = new double[size_of_matrix];
-    Matvec::mat_vec(A.get_matrix(),res, h_i_g, A.get_size(), A.get_width());
+    A.mat_vec(res, h_i_g);
 
     double normis = 0;
 

@@ -1,1 +1,3 @@
-void GMRES(int size_of_matrix, double* matrix, double* right_part, double* res);
+#include "world_class.cpp"
+
+void GMRES(Matvec& A, double* right_part, double* res);

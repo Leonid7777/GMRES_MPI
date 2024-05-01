@@ -34,16 +34,16 @@ public:
         return width_of_matrix;
     }
 
-    static void
-    mat_vec(double* mat, double* vec, double* res, int n, int m) {
+    void
+    mat_vec(double* vec, double* res) {
         int block_size = 16;
 
         #pragma omp parallel for collapse(2) schedule(static)
-        for (int i = 0; i < n; i += block_size) {
-            for (int j = 0; j < m; j += block_size) {
-                for (int ii = i; ii < std::min(i + block_size, n); ++ii) {
-                    for (int jj = j; jj < std::min(j + block_size, m); ++jj) {
-                        res[ii] += mat[ii * m + jj] * vec[jj];
+        for (int i = 0; i < size_of_matrix; i += block_size) {
+            for (int j = 0; j < width_of_matrix; j += block_size) {
+                for (int ii = i; ii < std::min(i + block_size, size_of_matrix); ++ii) {
+                    for (int jj = j; jj < std::min(j + block_size, width_of_matrix); ++jj) {
+                        res[ii] += matrix[ii * width_of_matrix + jj] * vec[jj];
                     }
                 }
             }
