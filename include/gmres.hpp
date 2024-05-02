@@ -7,7 +7,7 @@
 
 template <class T>
 void
-GMRES(T& A, double* right_part, double* res)
+GMRES(T& A, const double* right_part, double* res)
 {
     int size_of_matrix = A.get_size();
     double norm = vec_norm(right_part, size_of_matrix);

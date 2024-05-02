@@ -15,6 +15,7 @@ both_position_mat_mul(std::vector<double>& res, std::vector<double>& vec_res, in
 {
     double val_1;
 
+    #pragma omp for schedule(static)
     for(int j = 0; j < m; j++) {
         val_1 = c * res[j * n + position] + s * res[j * n + position + 1];
         res[j * n + position + 1] = - s * res[j * n + position] + c * res[j * n + position + 1];
@@ -33,15 +34,20 @@ both_position_mat_mul(std::vector<double>& res, std::vector<double>& vec_res, in
 void 
 place_mat_vec(std::vector<double> mat, double* vec, int m, int size_of_matrix)
 {
+    static constexpr int block_size = 128;
     double* res = new double[m];
 
     for(int i = 0; i < m; i++) {
         res[i] = 0;
     }
 
-    for(int i = 0; i < m; i++) {
-        for(int j = 0; j < m; j++) {
-            res[j] += mat[size_of_matrix * i + j] * vec[i];
+    #pragma omp parallel for schedule(static)
+    for (int j = 0; j < m; j += block_size) {
+        int top = std::min(j + block_size, m);
+        for (int i = 0; i < m; ++i) {
+            for (int jj = j; jj < top; ++jj) {
+                res[jj] += mat[i * size_of_matrix + jj] * vec[i];
+            }
         }
     }
 
@@ -55,9 +61,15 @@ place_mat_vec(std::vector<double> mat, double* vec, int m, int size_of_matrix)
 void
 vec_sub_mat(double* res, double* mat, double* vec, int m, int n)
 {   
-    for(int i = 0; i <= n; i++) {
-        for(int j = 0; j < m; j++) {
-            res[j] -= vec[i] * mat[i * m + j];
+    n += 1;
+    static constexpr int block_size = 128;
+    #pragma omp parallel for schedule(static)
+    for (int j = 0; j < m; j += block_size) {
+        int top = std::min(j + block_size, m);
+        for (int i = 0; i < n; ++i) {
+            for (int jj = j; jj < top; ++jj) {
+                res[jj] -= mat[i * m + jj] * vec[i];
+            }
         }
     }
 }

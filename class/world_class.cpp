@@ -4,15 +4,13 @@
 void 
 Matvec::mat_vec(double* vec, double* res)
 {
-    int block_size = 16;
+    static constexpr int block_size = 128;
 
-    #pragma omp parallel for collapse(2) schedule(static)
-    for (int i = 0; i < size_of_matrix; i += block_size) {
+    #pragma omp parallel for schedule(static)
+    for (int i = 0; i < size_of_matrix; ++i) {
         for (int j = 0; j < width_of_matrix; j += block_size) {
-            for (int ii = i; ii < std::min(i + block_size, size_of_matrix); ++ii) {
-                for (int jj = j; jj < std::min(j + block_size, width_of_matrix); ++jj) {
-                    res[ii] += matrix[ii * width_of_matrix + jj] * vec[jj];
-                }
+            for (int jj = j; jj < std::min(j + block_size, width_of_matrix); ++jj) {
+                res[i] += matrix[i * width_of_matrix + jj] * vec[i];
             }
         }
     }

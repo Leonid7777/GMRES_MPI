@@ -12,7 +12,7 @@ scal_prod(double* res, double* vec, double* mat, int m, int n)
 }
 
 double
-vec_norm(double* vec, int n)
+vec_norm(const double* vec, int n)
 {
     double val = 0;
     #pragma omp parallel for reduction(+:val)
