@@ -11,12 +11,12 @@ private:
 public:
     Matvec(double* mtx, const int size, const int width);
 
-    double* get_matrix();
+    double* get_matrix() const;
 
-    int get_size();
+    int get_size() const;
 
-    int get_width();
+    int get_width() const;
 
-    void mat_vec(double* vec, double* res);
+    void mat_vec(double* vec, double* res) const;
 
 };

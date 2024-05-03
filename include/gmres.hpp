@@ -7,23 +7,22 @@
 
 template <class T>
 void
-GMRES(T& A, const double* right_part, double* res)
+GMRES(const T& A, const double* right_part, double* res)
 {
     int size_of_matrix = A.get_size();
-    double norm = vec_norm(right_part, size_of_matrix);
+    double norm = norm_vec(right_part, size_of_matrix);
     int krylov_count = 0;
-
-    double* krylov_subspaces = new double[(size_of_matrix + 1) * size_of_matrix];
 
     int kr_v = std::max(2, (size_of_matrix + 1) / 10);
     std::vector<double> Q_vec ((size_of_matrix + 1) * kr_v);
     std::vector<double> H_vec ((size_of_matrix + 1) * (kr_v - 1));
+    std::vector<double> krylov_subspaces_vec (size_of_matrix * kr_v);
 
     eye_mat_place(Q_vec, size_of_matrix + 1, kr_v, 0);
 
     for(int i = 0; i < size_of_matrix; i++) {
         res[i] = 0;
-        krylov_subspaces[i] = right_part[i] / norm;
+        krylov_subspaces_vec[i] = right_part[i] / norm;
     }
 
     double denom, c, s;
@@ -36,27 +35,28 @@ GMRES(T& A, const double* right_part, double* res)
             kr_v = std::min(2 * kr_v, size_of_matrix + 1);
             Q_vec.resize(kr_v * (size_of_matrix + 1));
             H_vec.resize((kr_v - 1) * (size_of_matrix + 1));
+            krylov_subspaces_vec.resize(kr_v * size_of_matrix);
             eye_mat_place(Q_vec, size_of_matrix + 1, kr_v, place);
         }
 
-        A.mat_vec(krylov_subspaces + krylov_count * size_of_matrix, krylov_subspaces + (krylov_count + 1) * size_of_matrix);
+        A.mat_vec(&krylov_subspaces_vec[krylov_count * size_of_matrix], &krylov_subspaces_vec[(krylov_count + 1) * size_of_matrix]);
 
-        scal_prod(&H_vec[krylov_count * (size_of_matrix + 1)], krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces, size_of_matrix, krylov_count);
+        scal_prod(&H_vec[krylov_count * (size_of_matrix + 1)], &krylov_subspaces_vec[(krylov_count + 1) * size_of_matrix], &krylov_subspaces_vec[0], size_of_matrix, krylov_count);
 
-        vec_sub_mat(krylov_subspaces + (krylov_count + 1) * size_of_matrix, krylov_subspaces, &H_vec[krylov_count * (size_of_matrix + 1)], size_of_matrix, krylov_count);
+        vec_sub_mat(&krylov_subspaces_vec[(krylov_count + 1) * size_of_matrix], &krylov_subspaces_vec[0], &H_vec[krylov_count * (size_of_matrix + 1)], size_of_matrix, krylov_count);
 
-        H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1] = vec_norm(krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix);
+        H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1] = norm_vec(&krylov_subspaces_vec[(krylov_count + 1) * size_of_matrix], size_of_matrix);
 
         if(H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1] == 0) {
             krylov_count++;
             break;
         } else {
-            vec_del(krylov_subspaces + (krylov_count + 1) * size_of_matrix, size_of_matrix, H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1]);
+            scal_vec(&krylov_subspaces_vec[(krylov_count + 1) * size_of_matrix], size_of_matrix, H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1]);
         }
 
         place_mat_vec(Q_vec, &H_vec[krylov_count * (size_of_matrix + 1)], krylov_count + 1, size_of_matrix + 1);
 
-        denom = hypotenuse(H_vec[krylov_count * (size_of_matrix + 1) + krylov_count], H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1]);
+        denom = rotatation(H_vec[krylov_count * (size_of_matrix + 1) + krylov_count], H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1]);
 
         c =  H_vec[krylov_count * (size_of_matrix + 1) + krylov_count] / denom;
         s =  H_vec[krylov_count * (size_of_matrix + 1) + krylov_count + 1] / denom;
@@ -79,10 +79,9 @@ GMRES(T& A, const double* right_part, double* res)
 
     for(int i = 0; i < krylov_count; i++) {
         for(int j = 0; j < size_of_matrix; j++) {
-            res[j] += y[i] * krylov_subspaces[i * size_of_matrix + j];
+            res[j] += y[i] * krylov_subspaces_vec[i * size_of_matrix + j];
         }
     }
 
-    delete[] krylov_subspaces;
     delete[] y;
 }
