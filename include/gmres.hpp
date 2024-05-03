@@ -13,7 +13,7 @@ GMRES(const T& A, const double* right_part, double* res)
     double norm = norm_vec(right_part, size_of_matrix);
     int krylov_count = 0;
 
-    int kr_v = std::max(2, (size_of_matrix + 1) / 10);
+    int kr_v = 2;
     std::vector<double> Q_vec ((size_of_matrix + 1) * kr_v);
     std::vector<double> H_vec ((size_of_matrix + 1) * (kr_v - 1));
     std::vector<double> krylov_subspaces_vec (size_of_matrix * kr_v);
