@@ -5,25 +5,28 @@
 #include <vector>
 #include "create_mat_r.h"
 #include "vec_methods.h"
-#include "gmres.h"
+#include "gmres.hpp"
 
 
 int 
 main()
 {
     double norm = 0;
-    int size_of_matrix = 1000;
+    int size_of_matrix = 4000;
 
     double* matrix = new double[size_of_matrix * size_of_matrix];
     double* right_part = new double[size_of_matrix];
     double* res = new double[size_of_matrix];
 
     matrix_make(matrix, size_of_matrix);
+
+    Matvec A(matrix, size_of_matrix, size_of_matrix);
+
     right_part_make(right_part, size_of_matrix, norm);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    GMRES(size_of_matrix, matrix, right_part, res);
+    GMRES<Matvec>(A, right_part, res);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -31,7 +34,7 @@ main()
     std::cout << "Время работы программы: " << duration.count() << " миллисекунд" << std::endl;
 
     double* h_i_g = new double[size_of_matrix];
-    mat_vec(matrix, res, h_i_g, size_of_matrix, size_of_matrix);
+    A.mat_vec(res, h_i_g);
 
     double normis = 0;
 
